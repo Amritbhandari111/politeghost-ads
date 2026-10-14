@@ -66,6 +66,7 @@
       margin-top: 16px;
       font-size: 13px;
       color: #f5a623;
+      line-height: 1.4;
     }
   </style>
 </head>
@@ -74,7 +75,7 @@
   <div class="card">
     <div class="icon">🎁</div>
     <h2>Claim +5 Free Uses</h2>
-    <p>View a quick sponsor ad (takes ~5 seconds) to earn 5 free voice-to-message credits.</p>
+    <p>View a quick sponsor ad (~5 seconds) to earn 5 free voice-to-message credits.</p>
     <button id="ad-btn" class="btn" onclick="playAd()">⚡ View Quick Ad</button>
     <div id="status" class="status"></div>
   </div>
@@ -86,18 +87,16 @@
       tg.expand();
     }
 
-    // Uses your exact block ID: int-53860
     const urlParams = new URLSearchParams(window.location.search);
     const blockId = urlParams.get('block_id') || 'int-53860';
 
     let adController = null;
     try {
       if (window.Adsgram) {
-        // debug: true bypasses block approval so the 5s ad plays immediately!
+        // Production mode (real ads once approved)
         adController = window.Adsgram.init({
           blockId: blockId,
-          debug: true,
-          debugBannerType: 'FullscreenMedia'
+          debug: false
         });
       }
     } catch (e) {
@@ -110,13 +109,11 @@
 
       btn.disabled = true;
       btn.innerText = '⏳ Loading Ad...';
-      status.innerText = 'Opening sponsor ad...';
+      status.innerText = 'Connecting to sponsor...';
 
       if (!adController) {
-        status.innerText = 'Ad completed! Crediting uses...';
-        setTimeout(() => {
-          sendRewardSuccess();
-        }, 1500);
+        status.innerText = '🎉 Crediting +5 uses...';
+        setTimeout(sendRewardSuccess, 1000);
         return;
       }
 
@@ -128,7 +125,15 @@
         .catch((error) => {
           btn.disabled = false;
           btn.innerText = '⚡ Try Again';
-          status.innerText = '⚠️ Ad was closed before completing. Please view the full ad to claim credits.';
+
+          // If ad failed to load (e.g. block in moderation or no fill in region)
+          if (error && (error.state === 'load' || !error.state)) {
+            status.innerHTML = 'ℹ️ Sponsor ad is currently awaiting AdsGram moderation.<br><br><b>Claiming your +5 credits now...</b>';
+            setTimeout(sendRewardSuccess, 1500);
+          } else {
+            // User manually closed the playing ad before 5s
+            status.innerText = '⚠️ Ad was closed before completing. Please view the full ad to claim credits.';
+          }
         });
     }
 
