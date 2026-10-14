@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head> 
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>PoliteGhost Sponsor Reward</title>
@@ -74,8 +74,8 @@
   <div class="card">
     <div class="icon">🎁</div>
     <h2>Claim +5 Free Uses</h2>
-    <p>Watch a short 15-second sponsor video to earn 5 free voice-to-message credits.</p>
-    <button id="ad-btn" class="btn" onclick="playAd()">▶️ Watch Video</button>
+    <p>View a quick sponsor ad (takes ~5 seconds) to earn 5 free voice-to-message credits.</p>
+    <button id="ad-btn" class="btn" onclick="playAd()">⚡ View Quick Ad</button>
     <div id="status" class="status"></div>
   </div>
 
@@ -86,9 +86,9 @@
       tg.expand();
     }
 
-    // Default or URL-provided AdsGram block ID
+    // Read AdsGram block ID from URL query param or fallback to active block
     const urlParams = new URLSearchParams(window.location.search);
-    const blockId = urlParams.get('block_id') || 'YOUR_ADSGRAM_BLOCK_ID';
+    const blockId = urlParams.get('block_id') || 'int-53860';
 
     let adController = null;
     try {
@@ -104,27 +104,26 @@
       const status = document.getElementById('status');
 
       btn.disabled = true;
-      btn.innerText = '⏳ Loading Video...';
-      status.innerText = 'Preparing sponsor ad...';
+      btn.innerText = '⏳ Loading Ad...';
+      status.innerText = 'Opening 5-second sponsor ad...';
 
       if (!adController) {
-        // Fallback demo mode if blockId is not configured yet
-        status.innerText = 'Simulating sponsor reward...';
+        status.innerText = 'Simulating ad completion...';
         setTimeout(() => {
           sendRewardSuccess();
-        }, 1500);
+        }, 2000);
         return;
       }
 
       adController.show()
         .then((result) => {
-          status.innerText = '🎉 Video completed! Adding +5 credits...';
+          status.innerText = '🎉 Ad completed! Adding +5 credits...';
           sendRewardSuccess();
         })
         .catch((error) => {
           btn.disabled = false;
-          btn.innerText = '▶️ Try Again';
-          status.innerText = '⚠️ Ad was skipped or closed early. No reward claimed.';
+          btn.innerText = '⚡ Try Again';
+          status.innerText = '⚠️ Ad was closed before 5 seconds. Please watch full 5s to claim credits.';
         });
     }
 
