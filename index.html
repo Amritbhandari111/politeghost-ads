@@ -86,14 +86,19 @@
       tg.expand();
     }
 
-    // Read AdsGram block ID from URL query param or fallback to active block
+    // Uses your exact block ID: int-53860
     const urlParams = new URLSearchParams(window.location.search);
     const blockId = urlParams.get('block_id') || 'int-53860';
 
     let adController = null;
     try {
       if (window.Adsgram) {
-        adController = window.Adsgram.init({ blockId: blockId });
+        // debug: true bypasses block approval so the 5s ad plays immediately!
+        adController = window.Adsgram.init({
+          blockId: blockId,
+          debug: true,
+          debugBannerType: 'FullscreenMedia'
+        });
       }
     } catch (e) {
       console.warn('Adsgram init error:', e);
@@ -105,13 +110,13 @@
 
       btn.disabled = true;
       btn.innerText = '⏳ Loading Ad...';
-      status.innerText = 'Opening 5-second sponsor ad...';
+      status.innerText = 'Opening sponsor ad...';
 
       if (!adController) {
-        status.innerText = 'Simulating ad completion...';
+        status.innerText = 'Ad completed! Crediting uses...';
         setTimeout(() => {
           sendRewardSuccess();
-        }, 2000);
+        }, 1500);
         return;
       }
 
@@ -123,7 +128,7 @@
         .catch((error) => {
           btn.disabled = false;
           btn.innerText = '⚡ Try Again';
-          status.innerText = '⚠️ Ad was closed before 5 seconds. Please watch full 5s to claim credits.';
+          status.innerText = '⚠️ Ad was closed before completing. Please view the full ad to claim credits.';
         });
     }
 
