@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>PoliteGhost Sponsor Reward</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    body {
+      background-color: var(--tg-theme-bg-color, #17212b);
+      color: var(--tg-theme-text-color, #ffffff);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+      text-align: center;
+    }
+    .card {
+      background: var(--tg-theme-secondary-bg-color, #232e3c);
+      padding: 28px 24px;
+      border-radius: 16px;
+      max-width: 360px;
+      width: 100%;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+    .icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    h2 {
+      font-size: 20px;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+    p {
+      font-size: 14px;
+      color: var(--tg-theme-hint-color, #8e9ca8);
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+    .btn {
+      background: var(--tg-theme-button-color, #2481cc);
+      color: var(--tg-theme-button-text-color, #ffffff);
+      border: none;
+      padding: 14px 20px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 12px;
+      cursor: pointer;
+      width: 100%;
+      transition: opacity 0.2s;
+    }
+    .btn:active {
+      opacity: 0.8;
+    }
+    .status {
+      margin-top: 16px;
+      font-size: 13px;
+      color: #f5a623;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="icon">🎁</div>
+    <h2>Claim +5 Free Uses</h2>
+    <p>Watch a short 15-second sponsor video to earn 5 free voice-to-message credits.</p>
+    <button id="ad-btn" class="btn" onclick="playAd()">▶️ Watch Video</button>
+    <div id="status" class="status"></div>
+  </div>
+
+  <script>
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+    }
+
+    // Default or URL-provided AdsGram block ID
+    const urlParams = new URLSearchParams(window.location.search);
+    const blockId = urlParams.get('block_id') || 'YOUR_ADSGRAM_BLOCK_ID';
+
+    let adController = null;
+    try {
+      if (window.Adsgram) {
+        adController = window.Adsgram.init({ blockId: blockId });
+      }
+    } catch (e) {
+      console.warn('Adsgram init error:', e);
+    }
+
+    function playAd() {
+      const btn = document.getElementById('ad-btn');
+      const status = document.getElementById('status');
+
+      btn.disabled = true;
+      btn.innerText = '⏳ Loading Video...';
+      status.innerText = 'Preparing sponsor ad...';
+
+      if (!adController) {
+        // Fallback demo mode if blockId is not configured yet
+        status.innerText = 'Simulating sponsor reward...';
+        setTimeout(() => {
+          sendRewardSuccess();
+        }, 1500);
+        return;
+      }
+
+      adController.show()
+        .then((result) => {
+          status.innerText = '🎉 Video completed! Adding +5 credits...';
+          sendRewardSuccess();
+        })
+        .catch((error) => {
+          btn.disabled = false;
+          btn.innerText = '▶️ Try Again';
+          status.innerText = '⚠️ Ad was skipped or closed early. No reward claimed.';
+        });
+    }
+
+    function sendRewardSuccess() {
+      if (tg) {
+        tg.sendData(JSON.stringify({ action: 'reward_claimed', timestamp: Date.now() }));
+        setTimeout(() => {
+          tg.close();
+        }, 500);
+      } else {
+        alert('+5 Free Credits claimed!');
+      }
+    }
+  </script>
+</body>
+</html>
